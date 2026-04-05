@@ -1,0 +1,21 @@
+line-length = 80
+target-version = "py310"
+
+[lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+]
+ignore = ["E501", "UP017"]  # E501: line too long (handled by formatter), UP017: prefer timezone.utc over UTC (Pylance compat)
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]  # allow unused imports in __init__
+"routers/*.py" = ["B008"]  # allow Depends() in FastAPI route defaults
+
+[format]
+quote-style = "double"
+indent-style = "space"
