@@ -9,6 +9,7 @@ so callers retain full control over transaction boundaries.
 """
 
 from typing import Any, Generic, TypeVar
+from uuid import UUID
 
 from sqlalchemy import ColumnElement, delete, func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,7 @@ from core.exceptions import NotFoundException
 from models.base import Base
 
 ModelType = TypeVar("ModelType", bound=Base)
-IdType = TypeVar("IdType", int, str)
+IdType = TypeVar("IdType", int, str, UUID)
 
 
 class BaseRepository(Generic[ModelType, IdType]):

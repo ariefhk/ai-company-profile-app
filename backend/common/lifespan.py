@@ -12,8 +12,10 @@ from fastapi import FastAPI
 
 from common.logging import get_logger, setup_logging
 from core.config import get_configs
+from core.database import engine
 from jobs.registry import register_jobs
 from jobs.scheduler import scheduler
+from models.base import Base
 
 configs = get_configs()
 logger = get_logger(__name__)
@@ -35,6 +37,14 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """
     # --- Startup ---
     setup_logging()
+
+    # Import all models so Base.metadata is complete, then create tables
+    import models  # noqa: F401
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database tables created/verified")
+
     logger.info(
         "Starting %s v%s [%s]",
         configs.APP_NAME,
