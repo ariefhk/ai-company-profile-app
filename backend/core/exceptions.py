@@ -24,6 +24,9 @@ Response::
 """
 
 
+from uuid import UUID
+
+
 class AppException(Exception):
     """Base exception for all application-level errors.
 
@@ -44,13 +47,16 @@ class AppException(Exception):
         self.status_code = status_code
         self.message = message
         self.code = code
-        self.details = details or []
+        if details is not None:
+            self.details = details
+        else:
+            self.details = []
 
 
 class NotFoundException(AppException):
     """Raised when a requested resource does not exist (HTTP 404)."""
 
-    def __init__(self, resource: str, resource_id: int | str):
+    def __init__(self, resource: str, resource_id: int | str | UUID):
         super().__init__(
             404, f"{resource} with id '{resource_id}' not found", "NOT_FOUND"
         )

@@ -31,7 +31,9 @@ class ProductCategoryService:
     async def create(self, data: ProductCategoryCreate):
         existing = await self.repo.find_by_slug(data.slug)
         if existing:
-            raise ConflictException(f"Category slug '{data.slug}' already exists")
+            raise ConflictException(
+                f"Category slug '{data.slug}' already exists"
+            )
         return await self.repo.create(**data.model_dump())
 
     async def update(self, id: UUID, data: ProductCategoryUpdate):
@@ -40,7 +42,9 @@ class ProductCategoryService:
         if "slug" in update_data:
             existing = await self.repo.find_by_slug(update_data["slug"])
             if existing and existing.id != id:
-                raise ConflictException(f"Category slug '{update_data['slug']}' already exists")
+                raise ConflictException(
+                    f"Category slug '{update_data['slug']}' already exists"
+                )
         return await self.repo.update(category, **update_data)
 
     async def delete(self, id: UUID):
@@ -69,22 +73,32 @@ class ProductService:
     async def get_published(self, skip: int = 0, limit: int = 50):
         return await self.repo.find_published(skip=skip, limit=limit)
 
-    async def get_by_category(self, category_id: UUID, skip: int = 0, limit: int = 50):
-        return await self.repo.find_by_category(category_id, skip=skip, limit=limit)
+    async def get_by_category(
+        self, category_id: UUID, skip: int = 0, limit: int = 50
+    ):
+        return await self.repo.find_by_category(
+            category_id, skip=skip, limit=limit
+        )
 
     async def create(self, data: ProductCreate):
         existing = await self.repo.find_by_slug(data.slug)
         if existing:
-            raise ConflictException(f"Product slug '{data.slug}' already exists")
+            raise ConflictException(
+                f"Product slug '{data.slug}' already exists"
+            )
         return await self.repo.create(**data.model_dump())
 
     async def update(self, id: UUID, data: ProductUpdate):
         product = await self.repo.find_by_id_or_raise(id)
+
         update_data = data.model_dump(exclude_unset=True)
+
         if "slug" in update_data:
             existing = await self.repo.find_by_slug(update_data["slug"])
             if existing and existing.id != id:
-                raise ConflictException(f"Product slug '{update_data['slug']}' already exists")
+                raise ConflictException(
+                    f"Product slug '{update_data['slug']}' already exists"
+                )
         return await self.repo.update(product, **update_data)
 
     async def delete(self, id: UUID):

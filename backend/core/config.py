@@ -57,10 +57,9 @@ class Configs(BaseSettings):
     @model_validator(mode="after")
     def validate_production_settings(self):
         if self.APP_ENV == "production":
-            if (
-                self.SECRET_KEY == "change-me-in-production"
-                or len(self.SECRET_KEY) < 32
-            ):
+            is_default_key = self.SECRET_KEY == "change-me-in-production"
+            is_short_key = len(self.SECRET_KEY) < 32
+            if is_default_key or is_short_key:
                 raise ValueError(
                     "SECRET_KEY must be changed and at least 32 characters in production"
                 )

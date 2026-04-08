@@ -13,11 +13,18 @@ configs = get_configs()
 
 
 def create_app() -> FastAPI:
+    if configs.is_production:
+        docs_url = None
+        redoc_url = None
+    else:
+        docs_url = "/docs"
+        redoc_url = "/redoc"
+
     app = FastAPI(
         title=configs.APP_NAME,
         version=configs.APP_VERSION,
-        docs_url="/docs" if not configs.is_production else None,
-        redoc_url="/redoc" if not configs.is_production else None,
+        docs_url=docs_url,
+        redoc_url=redoc_url,
         lifespan=lifespan,
     )
 

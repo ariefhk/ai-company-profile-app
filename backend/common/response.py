@@ -61,7 +61,10 @@ def success_list_response(
         total_items, total_pages, has_next_page, has_prev_page).
     """
     # Calculate total pages
-    total_pages = math.ceil(total_items / limit) if limit > 0 else 0
+    if limit > 0:
+        total_pages = math.ceil(total_items / limit)
+    else:
+        total_pages = 0
 
     return JSONResponse(
         status_code=status_code,
@@ -112,7 +115,7 @@ def error_response(
             "message": message,
             "error": {
                 "code": code,
-                "details": details or [],
+                "details": details if details is not None else [],
             },
         },
     )

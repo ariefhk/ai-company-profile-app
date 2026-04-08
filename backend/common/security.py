@@ -16,14 +16,17 @@ configs = get_configs()
 
 def hash_password(plain: str) -> str:
     """Hash a plain-text password using bcrypt."""
-    return bcrypt.hashpw(plain.encode("utf-8"), bcrypt.gensalt()).decode(
-        "utf-8"
-    )
+    plain_bytes = plain.encode("utf-8")
+    salt = bcrypt.gensalt()
+    hashed_bytes = bcrypt.hashpw(plain_bytes, salt)
+    return hashed_bytes.decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Verify a plain-text password against a bcrypt hash."""
-    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    plain_bytes = plain.encode("utf-8")
+    hashed_bytes = hashed.encode("utf-8")
+    return bcrypt.checkpw(plain_bytes, hashed_bytes)
 
 
 # --- JWT ---
@@ -43,10 +46,11 @@ def create_access_token(
         Encoded JWT string.
     """
     to_encode = data.copy()
-    expire = datetime.now(tz=timezone.utc) + (
-        expires_delta or timedelta(minutes=configs.ACCESS_TOKEN_EXPIRE_MINUTES)
-    )
-    to_encode.update({"exp": expire})
+    if expires_delta is not None:
+        expire = datetime.now(tz=timezone.utc) + expires_delta
+    else:
+        expire = datetime.now(tz=timezone.utc) + timedelta(minutes=configs.ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode["exp"] = expire
     return jwt.encode(
         to_encode, configs.SECRET_KEY, algorithm=configs.ALGORITHM
     )

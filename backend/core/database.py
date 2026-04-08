@@ -36,12 +36,10 @@ if configs.DATABASE_URL.startswith("sqlite"):
 _pool_kwargs: dict = {"pool_pre_ping": True}
 
 if not configs.DATABASE_URL.startswith("sqlite"):
-    _pool_kwargs.update(
-        pool_size=configs.DB_POOL_SIZE,
-        max_overflow=configs.DB_MAX_OVERFLOW,
-        pool_recycle=configs.DB_POOL_RECYCLE,
-        pool_timeout=configs.DB_POOL_TIMEOUT,
-    )
+    _pool_kwargs["pool_size"] = configs.DB_POOL_SIZE
+    _pool_kwargs["max_overflow"] = configs.DB_MAX_OVERFLOW
+    _pool_kwargs["pool_recycle"] = configs.DB_POOL_RECYCLE
+    _pool_kwargs["pool_timeout"] = configs.DB_POOL_TIMEOUT
 
 engine = create_async_engine(
     configs.DATABASE_URL,

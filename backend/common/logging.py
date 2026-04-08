@@ -72,10 +72,8 @@ class JSONFormatter(logging.Formatter):
         # Capture exception type and message without full traceback
         # to keep log lines compact; full stack is in stderr by default
         if record.exc_info:
-            exc_type, exc_value = (
-                record.exc_info[0],
-                record.exc_info[1],
-            )
+            exc_type = record.exc_info[0]
+            exc_value = record.exc_info[1]
             if exc_type is not None and exc_value is not None:
                 log_data["exception"] = {
                     "type": exc_type.__name__,

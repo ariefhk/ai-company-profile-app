@@ -6,7 +6,6 @@ from pydantic import BaseModel
 
 from models.section import RefType, SectionType
 
-
 # --- SectionItem ---
 
 

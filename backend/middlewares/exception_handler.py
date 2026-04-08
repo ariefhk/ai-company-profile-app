@@ -98,14 +98,16 @@ def register_exception_handlers(app: FastAPI) -> None:
     ):
         """Flatten Pydantic validation errors into a ``details`` list with
         field path, message, and error type for each violated constraint."""
-        details = [
-            {
-                "field": " -> ".join(str(loc) for loc in err["loc"]),
+        details = []
+        for err in exc.errors():
+            loc_parts = []
+            for loc in err["loc"]:
+                loc_parts.append(str(loc))
+            details.append({
+                "field": " -> ".join(loc_parts),
                 "message": err["msg"],
                 "type": err["type"],
-            }
-            for err in exc.errors()
-        ]
+            })
         return error_response(
             request,
             status_code=422,
@@ -144,11 +146,10 @@ def register_exception_handlers(app: FastAPI) -> None:
                 }
             },
         )
-        message = (
-            "Internal server error"
-            if configs.is_production
-            else f"Internal server error: {exc}"
-        )
+        if configs.is_production:
+            message = "Internal server error"
+        else:
+            message = "Internal server error: " + str(exc)
         return error_response(
             request,
             status_code=500,

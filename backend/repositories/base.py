@@ -59,13 +59,16 @@ class BaseRepository(Generic[ModelType, IdType]):
         """Return a single record by primary key, or raise 404."""
         instance = await self.find_by_id(id)
         if instance is None:
-            name = resource_name or self.model.__name__
+            if resource_name is not None:
+                name = resource_name
+            else:
+                name = self.model.__name__
             raise NotFoundException(name, id)
         return instance
 
     async def find_by_ids(self, ids: list[IdType]) -> list[ModelType]:
         """Return all records matching the given list of primary keys."""
-        if not ids:
+        if len(ids) == 0:
             return []
         result = await self.db.execute(
             select(self.model).where(self.model.id.in_(ids))
@@ -160,7 +163,10 @@ class BaseRepository(Generic[ModelType, IdType]):
         """Return a record by primary key with relationships, or raise 404."""
         instance = await self.find_by_id_with(id, *relationships)
         if instance is None:
-            name = resource_name or self.model.__name__
+            if resource_name is not None:
+                name = resource_name
+            else:
+                name = self.model.__name__
             raise NotFoundException(name, id)
         return instance
 
@@ -203,8 +209,9 @@ class BaseRepository(Generic[ModelType, IdType]):
             )
         """
         query = select(self.model).where(*conditions).offset(skip).limit(limit)
-        for relationship in relationships or []:
-            query = query.options(selectinload(relationship))
+        if relationships is not None:
+            for relationship in relationships:
+                query = query.options(selectinload(relationship))
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
@@ -223,8 +230,9 @@ class BaseRepository(Generic[ModelType, IdType]):
             )
         """
         query = select(self.model).where(*conditions)
-        for relationship in relationships or []:
-            query = query.options(selectinload(relationship))
+        if relationships is not None:
+            for relationship in relationships:
+                query = query.options(selectinload(relationship))
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
@@ -304,14 +312,14 @@ class BaseRepository(Generic[ModelType, IdType]):
         await self.db.refresh(instance)
         return instance
 
-    async def update(self, instance: ModelType, **kwargs) -> ModelType:
+    async def update(self, instance: ModelType, **kwargs: Any) -> ModelType:
         """Apply partial updates to an existing instance.
 
         Only the supplied keyword arguments are set; other
         attributes remain unchanged.
         """
-        for field_name, field_value in kwargs.items():
-            setattr(instance, field_name, field_value)
+        for key in kwargs:
+            setattr(instance, key, kwargs[key])
         await self.db.flush()
         await self.db.refresh(instance)
         return instance
@@ -343,10 +351,14 @@ class BaseRepository(Generic[ModelType, IdType]):
         items:
             List of dicts, each forwarded to the model constructor.
         """
-        instances = [self.model(**data) for data in items]
+        instances: list[ModelType] = []
+        for data in items:
+            instances.append(self.model(**data))
         self.db.add_all(instances)
         await self.db.flush()
-        ids = [instance.id for instance in instances]
+        ids: list[Any] = []
+        for instance in instances:
+            ids.append(instance.id)  # type: ignore[attr-defined]
         result = await self.db.execute(
             select(self.model).where(self.model.id.in_(ids))
         )

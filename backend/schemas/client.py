@@ -5,7 +5,6 @@ from pydantic import BaseModel
 
 from models.client import ClientStatus
 
-
 # --- ClientTestimonial ---
 
 
